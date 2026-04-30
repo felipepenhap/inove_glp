@@ -41,36 +41,165 @@ class _LogInjectionSheetState extends State<LogInjectionSheet> {
     super.dispose();
   }
 
+  Future<void> _openBodyPickerFullScreen() async {
+    final recent = context
+        .read<AppState>()
+        .injections
+        .take(6)
+        .map((e) => e.site)
+        .toList();
+    final picked = await Navigator.of(context).push<InjectionSite>(
+      MaterialPageRoute<InjectionSite>(
+        builder: (ctx) {
+          var temp = _site;
+          return StatefulBuilder(
+            builder: (context, setStatePicker) {
+              return Scaffold(
+                appBar: AppBar(title: const Text('Mapa do corpo humano')),
+                body: Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      const Text(
+                        'Toque no local da aplicação',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w800,
+                          color: AppTheme.navy,
+                          fontSize: 16,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      const Text(
+                        'A imagem abre maior para facilitar a seleção.',
+                        style: TextStyle(
+                          color: AppTheme.textMuted,
+                          fontSize: 12,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Expanded(
+                        child: ModernCard(
+                          padding: const EdgeInsets.all(12),
+                          child: BodyInjectionPicker(
+                            selected: temp,
+                            onSelect: (s) {
+                              setStatePicker(() => temp = s);
+                            },
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                        decoration: BoxDecoration(
+                          color: AppTheme.teal.withValues(alpha: 0.08),
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(color: AppTheme.teal.withValues(alpha: 0.22)),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(
+                              Icons.pin_drop_rounded,
+                              color: AppTheme.teal,
+                              size: 18,
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                'Selecionado: ${temp.labelKey}',
+                                style: const TextStyle(
+                                  color: AppTheme.navy,
+                                  fontWeight: FontWeight.w800,
+                                  fontSize: 13,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      if (recent.isNotEmpty) ...[
+                        const SizedBox(height: 10),
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            'Últimas aplicações',
+                            style: TextStyle(
+                              color: AppTheme.navy.withValues(alpha: 0.78),
+                              fontWeight: FontWeight.w800,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: [
+                            for (final site in recent)
+                              InkWell(
+                                borderRadius: BorderRadius.circular(999),
+                                onTap: () => setStatePicker(() => temp = site),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 10,
+                                    vertical: 7,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: temp == site
+                                        ? AppTheme.teal.withValues(alpha: 0.16)
+                                        : AppTheme.navy.withValues(alpha: 0.06),
+                                    borderRadius: BorderRadius.circular(999),
+                                    border: Border.all(
+                                      color: temp == site
+                                          ? AppTheme.teal.withValues(alpha: 0.5)
+                                          : AppTheme.navy.withValues(alpha: 0.15),
+                                    ),
+                                  ),
+                                  child: Text(
+                                    site.labelKey,
+                                    style: TextStyle(
+                                      color: temp == site ? AppTheme.teal : AppTheme.navy,
+                                      fontWeight: FontWeight.w700,
+                                      fontSize: 11,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
+                      ],
+                      const SizedBox(height: 12),
+                      FilledButton.icon(
+                        onPressed: () => Navigator.of(ctx).pop(temp),
+                        icon: const Icon(Icons.check_rounded),
+                        label: const Text('Confirmar local'),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          );
+        },
+      ),
+    );
+    if (picked != null && mounted) {
+      setState(() => _site = picked);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final st = context.watch<AppState>();
-    final bottom = MediaQuery.of(context).viewPadding.bottom;
-    return DraggableScrollableSheet(
-      expand: false,
-      initialChildSize: 0.94,
-      minChildSize: 0.55,
-      maxChildSize: 0.97,
-      builder: (context, scrollController) {
-        return Material(
-          color: AppTheme.surface,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
-          clipBehavior: Clip.antiAlias,
-          child: ListView(
-            controller: scrollController,
-            padding: EdgeInsets.fromLTRB(20, 0, 20, 20 + bottom),
-            children: [
-              const SizedBox(height: 8),
-              Center(
-                child: Container(
-                  width: 40,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: AppTheme.navy.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
+    final bottom = MediaQuery.of(context).viewPadding.bottom + 20;
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Nova aplicação'),
+      ),
+      body: ListView(
+        padding: EdgeInsets.fromLTRB(20, 12, 20, bottom),
+        children: [
               Row(
                 children: [
                   Container(
@@ -148,34 +277,14 @@ class _LogInjectionSheetState extends State<LogInjectionSheet> {
                   ),
                 ),
               ],
-              const SizedBox(height: 20),
-              const Text(
-                'Local da aplicação',
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w800,
-                  color: AppTheme.navy,
-                ),
-              ),
-              const SizedBox(height: 4),
-              const Text(
-                'Selecione no mapa; o menu abaixo sincroniza com o toque.',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: AppTheme.textMuted,
-                  height: 1.3,
-                ),
-              ),
               const SizedBox(height: 12),
-              ModernCard(
-                padding: const EdgeInsets.all(12),
-                child: BodyInjectionPicker(
-                  selected: _site,
-                  onSelect: (s) {
-                    setState(() {
-                      _site = s;
-                    });
-                  },
+              FilledButton.tonalIcon(
+                onPressed: _openBodyPickerFullScreen,
+                icon: const Icon(Icons.accessibility_new_rounded),
+                label: const Text('Abrir foto do corpo humano'),
+                style: FilledButton.styleFrom(
+                  minimumSize: const Size.fromHeight(48),
+                  foregroundColor: AppTheme.navy,
                 ),
               ),
               const SizedBox(height: 10),
@@ -210,7 +319,7 @@ class _LogInjectionSheetState extends State<LogInjectionSheet> {
                   ],
                 ),
               ),
-              const SizedBox(height: 14),
+              const SizedBox(height: 10),
               const Text(
                 'Ou escolha na lista',
                 style: TextStyle(
@@ -239,7 +348,7 @@ class _LogInjectionSheetState extends State<LogInjectionSheet> {
                 ],
                 onSelected: (e) => setState(() => _site = e),
               ),
-              const SizedBox(height: 18),
+              const SizedBox(height: 12),
               const Text(
                 'Dose',
                 style: TextStyle(
@@ -290,7 +399,7 @@ class _LogInjectionSheetState extends State<LogInjectionSheet> {
                   LengthLimitingTextInputFormatter(40),
                 ],
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 12),
               const Text(
                 'Data e hora',
                 style: TextStyle(
@@ -430,8 +539,6 @@ class _LogInjectionSheetState extends State<LogInjectionSheet> {
               ),
             ],
           ),
-        );
-      },
     );
   }
 }

@@ -12,6 +12,7 @@ class UserProfile {
     required this.activityKey,
     required this.name,
     this.email,
+    this.password,
     this.proteinTargetG = 0,
     this.fiberTargetG = 0,
     this.waterTargetL = 0,
@@ -30,6 +31,7 @@ class UserProfile {
   final String activityKey;
   final String name;
   final String? email;
+  final String? password;
   final double proteinTargetG;
   final double fiberTargetG;
   final double waterTargetL;
@@ -40,23 +42,24 @@ class UserProfile {
   double get kgToLose => startWeightKg - goalWeightKg;
 
   Map<String, dynamic> toJson() => {
-        'usingGlp1': usingGlp1,
-        'medicationLine': medicationLine,
-        'doseLabel': doseLabel,
-        'frequencyDays': frequencyDays,
-        'sex': sex,
-        'age': age,
-        'heightCm': heightCm,
-        'startWeightKg': startWeightKg,
-        'goalWeightKg': goalWeightKg,
-        'activityKey': activityKey,
-        'name': name,
-        'email': email,
-        'proteinTargetG': proteinTargetG,
-        'fiberTargetG': fiberTargetG,
-        'waterTargetL': waterTargetL,
-        'carbTargetG': carbTargetG,
-      };
+    'usingGlp1': usingGlp1,
+    'medicationLine': medicationLine,
+    'doseLabel': doseLabel,
+    'frequencyDays': frequencyDays,
+    'sex': sex,
+    'age': age,
+    'heightCm': heightCm,
+    'startWeightKg': startWeightKg,
+    'goalWeightKg': goalWeightKg,
+    'activityKey': activityKey,
+    'name': name,
+    'email': email,
+    'password': password,
+    'proteinTargetG': proteinTargetG,
+    'fiberTargetG': fiberTargetG,
+    'waterTargetL': waterTargetL,
+    'carbTargetG': carbTargetG,
+  };
 
   static UserProfile? fromJson(Map<String, dynamic>? m) {
     if (m == null) return null;
@@ -73,6 +76,7 @@ class UserProfile {
       activityKey: m['activityKey'] as String? ?? 'light',
       name: m['name'] as String? ?? '',
       email: m['email'] as String?,
+      password: m['password'] as String?,
       proteinTargetG: (m['proteinTargetG'] as num?)?.toDouble() ?? 0,
       fiberTargetG: (m['fiberTargetG'] as num?)?.toDouble() ?? 30,
       waterTargetL: (m['waterTargetL'] as num?)?.toDouble() ?? 2.5,

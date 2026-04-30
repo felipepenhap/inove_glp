@@ -45,5 +45,11 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>NSUserNotificationsUsageDescription</key>
+	<string>O Inove GLP envia lembretes de aplicação, hidratação, peso e refeições para o seu tratamento.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>O app usa a câmera para estimar alimentos do seu prato com IA.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>O app acessa fotos para estimar alimentos com IA.</string>
 </dict>
 </plist>

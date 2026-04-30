@@ -1,3 +1,6 @@
+import 'dart:io';
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
@@ -7,7 +10,6 @@ import '../../core/models/injection_site.dart';
 import '../../core/models/weight_entry.dart';
 import '../../core/services/app_state.dart';
 import '../../core/theme/app_theme.dart';
-import '../widgets/app_logo.dart';
 import '../widgets/modern_card.dart';
 import '../widgets/section_header.dart';
 import '../widgets/weight_loss_chart.dart';
@@ -49,12 +51,7 @@ class InicioPage extends StatelessWidget {
               dayLabel: dayLabel,
               greeting: firstName,
               dietMetasAtingidas: _dietMetasAtingidas(s, p),
-              logo: Transform.scale(
-                alignment: Alignment.topRight,
-                scale: 1.45,
-                filterQuality: FilterQuality.high,
-                child: const AppLogo(size: 60, borderRadius: 16),
-              ),
+              profilePhotoPath: s.profilePhotoPath,
             ),
             const SizedBox(height: 16),
             ModernCard(
@@ -250,11 +247,10 @@ class InicioPage extends StatelessWidget {
               subtitle: 'Dose, local e data',
               action: TextButton.icon(
                 onPressed: () {
-                  showModalBottomSheet<void>(
-                    context: context,
-                    isScrollControlled: true,
-                    showDragHandle: true,
-                    builder: (_) => const LogInjectionSheet(),
+                  Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (_) => const LogInjectionSheet(),
+                    ),
                   );
                 },
                 style: TextButton.styleFrom(foregroundColor: AppTheme.teal),
@@ -499,13 +495,13 @@ class _DashboardHeader extends StatelessWidget {
     required this.dayLabel,
     required this.greeting,
     required this.dietMetasAtingidas,
-    required this.logo,
+    required this.profilePhotoPath,
   });
 
   final String dayLabel;
   final String greeting;
   final bool dietMetasAtingidas;
-  final Widget logo;
+  final String? profilePhotoPath;
 
   @override
   Widget build(BuildContext context) {
@@ -543,14 +539,6 @@ class _DashboardHeader extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 8),
-                Text(
-                  'Controle do seu tratamento',
-                  style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.75),
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
                 if (dietMetasAtingidas) ...[
                   const SizedBox(height: 10),
                   Row(
@@ -605,11 +593,49 @@ class _DashboardHeader extends StatelessWidget {
                   ),
                 ),
               ],
-              logo,
+              ClipRRect(
+                borderRadius: BorderRadius.circular(16),
+                child: SizedBox(
+                  width: 66,
+                  height: 66,
+                  child: _buildHeaderPhoto(profilePhotoPath),
+                ),
+              ),
             ],
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildHeaderPhoto(String? path) {
+    if (path == null || path.isEmpty) {
+      return Container(
+        color: Colors.white.withValues(alpha: 0.16),
+        child: const Icon(Icons.person_rounded, color: Colors.white, size: 34),
+      );
+    }
+    if (kIsWeb) {
+      return Image.network(
+        path,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          return Container(
+            color: Colors.white.withValues(alpha: 0.16),
+            child: const Icon(Icons.person_rounded, color: Colors.white, size: 34),
+          );
+        },
+      );
+    }
+    return Image.file(
+      File(path),
+      fit: BoxFit.cover,
+      errorBuilder: (context, error, stackTrace) {
+        return Container(
+          color: Colors.white.withValues(alpha: 0.16),
+          child: const Icon(Icons.person_rounded, color: Colors.white, size: 34),
+        );
+      },
     );
   }
 }

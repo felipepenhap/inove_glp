@@ -18,17 +18,35 @@ class BodyInjectionPicker extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, c) {
         final w = c.maxWidth;
-        final h = w * 1.45;
+        final h = (w * 1.78).clamp(320.0, 680.0);
         return SizedBox(
           width: w,
           height: h,
           child: Stack(
             children: [
-              CustomPaint(
-                size: Size(w, h),
-                painter: _BodySilhouettePainter(),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(16),
+                child: Image.asset(
+                  'assets/corpo.png',
+                  width: w,
+                  height: h,
+                  fit: BoxFit.contain,
+                  errorBuilder: (context, error, stackTrace) {
+                    return Container(
+                      width: w,
+                      height: h,
+                      color: AppTheme.navy.withValues(alpha: 0.05),
+                      alignment: Alignment.center,
+                      child: const Icon(
+                        Icons.image_not_supported_outlined,
+                        color: AppTheme.textMuted,
+                        size: 30,
+                      ),
+                    );
+                  },
+                ),
               ),
-              for (final z in _zones) _zone(w, h, z),
+              for (final z in _zones) _zone(w, h, z, context),
             ],
           ),
         );
@@ -36,44 +54,42 @@ class BodyInjectionPicker extends StatelessWidget {
     );
   }
 
-  Widget _zone(double w, double h, _Zone z) {
+  Widget _zone(double w, double h, _Zone z, BuildContext context) {
     final isSel = selected == z.site;
     return Positioned(
-      left: w * z.l,
-      top: h * z.t,
-      width: w * z.wd,
-      height: h * z.ht,
+      left: (w * z.x) - z.size / 2,
+      top: (h * z.y) - z.size / 2,
+      width: z.size,
+      height: z.size,
       child: Material(
-        color: isSel
-            ? AppTheme.teal.withValues(alpha: 0.4)
-            : AppTheme.navy.withValues(alpha: 0.04),
-        borderRadius: BorderRadius.circular(10),
+        color: Colors.transparent,
+        shape: const CircleBorder(),
         child: InkWell(
           onTap: () {
             onSelect(z.site);
           },
-          borderRadius: BorderRadius.circular(10),
+          customBorder: const CircleBorder(),
           child: DecoratedBox(
             decoration: BoxDecoration(
-              border: Border.all(
-                color: isSel
-                    ? AppTheme.teal
-                    : AppTheme.navy.withValues(alpha: 0.12),
-                width: isSel ? 2.5 : 1,
-              ),
-              borderRadius: BorderRadius.circular(10),
+              shape: BoxShape.circle,
+              color: isSel
+                  ? AppTheme.teal.withValues(alpha: 0.8)
+                  : AppTheme.navy.withValues(alpha: 0.28),
+              border: Border.all(color: Colors.white, width: 2),
               boxShadow: isSel
                   ? [
                       BoxShadow(
-                        color: AppTheme.teal.withValues(alpha: 0.35),
-                        blurRadius: 8,
-                        spreadRadius: 0,
+                        color: AppTheme.teal.withValues(alpha: 0.4),
+                        blurRadius: 12,
                         offset: const Offset(0, 2),
                       ),
                     ]
                   : null,
             ),
-            child: const SizedBox.expand(),
+            child: Tooltip(
+              message: z.site.labelKey,
+              child: const SizedBox.expand(),
+            ),
           ),
         ),
       ),
@@ -82,70 +98,21 @@ class BodyInjectionPicker extends StatelessWidget {
 }
 
 class _Zone {
-  const _Zone(this.site, this.l, this.t, this.wd, this.ht);
+  const _Zone(this.site, this.x, this.y, this.size);
 
   final InjectionSite site;
-  final double l;
-  final double t;
-  final double wd;
-  final double ht;
+  final double x;
+  final double y;
+  final double size;
 }
 
 const _zones = <_Zone>[
-  _Zone(InjectionSite.upperLeftAbdomen, 0.26, 0.10, 0.2, 0.14),
-  _Zone(InjectionSite.upperRightAbdomen, 0.54, 0.10, 0.2, 0.14),
-  _Zone(InjectionSite.leftAbdomen, 0.2, 0.28, 0.25, 0.18),
-  _Zone(InjectionSite.rightAbdomen, 0.55, 0.28, 0.25, 0.18),
-  _Zone(InjectionSite.leftThigh, 0.25, 0.52, 0.2, 0.18),
-  _Zone(InjectionSite.rightThigh, 0.55, 0.52, 0.2, 0.18),
-  _Zone(InjectionSite.leftArm, 0.0, 0.18, 0.14, 0.2),
-  _Zone(InjectionSite.rightArm, 0.86, 0.18, 0.14, 0.2),
+  _Zone(InjectionSite.upperLeftAbdomen, 0.46, 0.41, 28),
+  _Zone(InjectionSite.upperRightAbdomen, 0.54, 0.41, 28),
+  _Zone(InjectionSite.leftAbdomen, 0.45, 0.46, 30),
+  _Zone(InjectionSite.rightAbdomen, 0.55, 0.46, 30),
+  _Zone(InjectionSite.leftThigh, 0.46, 0.56, 30),
+  _Zone(InjectionSite.rightThigh, 0.54, 0.56, 30),
+  _Zone(InjectionSite.leftArm, 0.36, 0.24, 28),
+  _Zone(InjectionSite.rightArm, 0.64, 0.24, 28),
 ];
-
-class _BodySilhouettePainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final p = Paint()
-      ..color = const Color(0xFFCBD5E1)
-      ..style = PaintingStyle.fill;
-    final o = Path();
-    final cx = size.width * 0.5;
-    o.addOval(
-      Rect.fromCenter(
-        center: Offset(cx, size.height * 0.08),
-        width: size.width * 0.2,
-        height: size.height * 0.1,
-      ),
-    );
-    o.addRRect(
-      RRect.fromRectAndRadius(
-        Rect.fromCenter(
-          center: Offset(cx, size.height * 0.4),
-          width: size.width * 0.42,
-          height: size.height * 0.38,
-        ),
-        const Radius.circular(16),
-      ),
-    );
-    o.addOval(
-      Rect.fromCenter(
-        center: Offset(size.width * 0.3, size.height * 0.6),
-        width: size.width * 0.16,
-        height: size.height * 0.12,
-      ),
-    );
-    o.addOval(
-      Rect.fromCenter(
-        center: Offset(size.width * 0.7, size.height * 0.6),
-        width: size.width * 0.16,
-        height: size.height * 0.12,
-      ),
-    );
-    canvas.drawPath(o, p);
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) {
-    return false;
-  }
-}

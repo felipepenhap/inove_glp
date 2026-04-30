@@ -4,13 +4,16 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:provider/provider.dart';
 
 import 'app/main_shell.dart';
-import 'app/widgets/app_logo.dart';
+import 'app/pages/login_page.dart';
+import 'app/pages/splash_screen.dart';
 import 'core/services/app_state.dart';
+import 'core/services/reminder_notifications.dart';
 import 'core/theme/app_theme.dart';
 import 'primeiro_acesso/first_access_flow.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await ReminderNotifications.init();
   await initializeDateFormatting('pt_BR', null);
   runApp(
     ChangeNotifierProvider(
@@ -48,21 +51,13 @@ class _RootGate extends StatelessWidget {
     return Consumer<AppState>(
       builder: (context, s, _) {
         if (!s.isReady) {
-          return const Scaffold(
-            body: Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  AppLogo(size: 88, borderRadius: 22),
-                  SizedBox(height: 24),
-                  SizedBox(
-                    width: 28,
-                    height: 28,
-                    child: CircularProgressIndicator(strokeWidth: 2.5, color: AppTheme.teal),
-                  ),
-                ],
-              ),
-            ),
+          return const SplashScreen();
+        }
+        if (!s.isLoggedIn) {
+          return LoginPage(
+            onFirstAccess: () {
+              s.startFirstAccess();
+            },
           );
         }
         if (!s.firstAccessDone) {

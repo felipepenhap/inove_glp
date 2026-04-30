@@ -11,6 +11,7 @@ class OnboardingData {
   double weightCurrent = 100;
   double weightGoal = 80;
   String activityKey = 'light';
+  List<String> trainingPreferences = ['strength', 'walking'];
   String displayName = '';
   String email = '';
   String password = '';

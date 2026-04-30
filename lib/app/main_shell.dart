@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
+import '../core/services/app_state.dart';
 import '../core/theme/app_theme.dart';
 import 'pages/alimentacao_page.dart';
 import 'pages/configuracoes_page.dart';
 import 'pages/hidratacao_page.dart';
 import 'pages/inicio_page.dart';
 import 'pages/log_injection_sheet.dart';
+import 'pages/pro_plan_sheet.dart';
+import 'pages/treino_page.dart';
 import 'widgets/app_logo.dart';
 
 class MainShell extends StatefulWidget {
@@ -27,7 +31,9 @@ class _MainShellState extends State<MainShell> {
       case 2:
         return 'Hidratação';
       case 3:
-        return 'Configurações';
+        return 'Treino';
+      case 4:
+        return 'Perfil';
       default:
         return 'Inove GLP';
     }
@@ -70,17 +76,17 @@ class _MainShellState extends State<MainShell> {
           InicioPage(),
           AlimentacaoPage(),
           HidratacaoTabView(),
+          TreinoPage(),
           ConfiguracoesPage(),
         ],
       ),
       floatingActionButton: _idx == 0
           ? FloatingActionButton.extended(
               onPressed: () {
-                showModalBottomSheet<void>(
-                  context: context,
-                  isScrollControlled: true,
-                  showDragHandle: true,
-                  builder: (_) => const LogInjectionSheet(),
+                Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => const LogInjectionSheet(),
+                  ),
                 );
               },
               backgroundColor: AppTheme.teal,
@@ -92,6 +98,13 @@ class _MainShellState extends State<MainShell> {
       bottomNavigationBar: NavigationBar(
         selectedIndex: _idx,
         onDestinationSelected: (i) {
+          if (i == 3) {
+            final pro = context.read<AppState>().isPro;
+            if (!pro) {
+              showProPlanSheet(context);
+              return;
+            }
+          }
           setState(() => _idx = i);
         },
         backgroundColor: AppTheme.surfaceCard,
@@ -114,9 +127,14 @@ class _MainShellState extends State<MainShell> {
             label: 'Hidratação',
           ),
           NavigationDestination(
-            icon: Icon(Icons.tune_outlined, size: 24),
-            selectedIcon: Icon(Icons.tune_rounded, color: AppTheme.teal, size: 24),
-            label: 'Configurações',
+            icon: Icon(Icons.fitness_center_outlined, size: 24),
+            selectedIcon: Icon(Icons.fitness_center_rounded, color: AppTheme.teal, size: 24),
+            label: 'Treino',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.person_outline_rounded, size: 24),
+            selectedIcon: Icon(Icons.person_rounded, color: AppTheme.teal, size: 24),
+            label: 'Perfil',
           ),
         ],
       ),

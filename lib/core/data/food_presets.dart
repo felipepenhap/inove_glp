@@ -10,6 +10,8 @@ class FoodPreset {
   final double proteinG;
   final double fiberG;
   final double carbG;
+
+  double get estimatedKcal => proteinG * 4 + carbG * 4 + fiberG * 2;
 }
 
 const kFoodPresets = <FoodPreset>[
